@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grand Stand Cricket Arena</title>
+    <style>
+        :root {
+            --bg-dark: #0f141c;
+            --card-bg: #1a222f;
+            --border-color: #2a3649;
+            --text-main: #f4f5f6;
+            --text-muted: #8a99ad;
+            --accent-gold: #d4af37;
+            --bowling-theme: #cd3a3a;
+            --winning-green: #3acd7a;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .stadium-container {
+            width: 100%;
+            max-width: 700px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        .broadcast-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.1);
+        }
+
+        .broadcast-header h1 { margin: 0; font-size: 1.4rem; text-transform: uppercase; letter-spacing: 1px; }
+        #role-identity { margin-top: 5px; font-size: 0.85rem; color: var(--text-muted); font-weight: bold; }
+        .match-arena { padding: 25px; }
+
+        .status-ticker {
+            text-align: center;
+            font-size: 1rem;
+            color: var(--accent-gold);
+            margin-bottom: 25px;
+            min-height: 24px;
+        }
+
+        .live-scoreboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.2);
+            margin-bottom: 25px;
+        }
+
+        .score-box { padding: 15px; text-align: center; }
+        .score-box:not(:last-child) { border-right: 1px solid var(--border-color); }
+        .score-box .label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; }
+        .score-box .value { font-size: 1.4rem; font-weight: 600; }
+
+        .showdown-stage {
+            background: rgba(0,0,0,0.3);
+            border: 1px dashed var(--border-color);
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .versus-grid { display: flex; justify-content: center; align-items: center; gap: 30px; }
+
+        .choice-disc {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: var(--bg-dark);
+            border: 2px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .choice-disc .role-lbl { font-size: 0.6rem; text-transform: uppercase; color: var(--text-muted); }
+        .choice-disc .num-val { font-size: 1.4rem; font-weight: 700; }
+
+        .panel {
+            display: none;
+            text-align: center;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 6px;
+            background: rgba(255,255,255,0.01);
+        }
+
+        .action-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 24px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            text-transform: uppercase;
+        }
+        .action-btn:hover { border-color: var(--text-main); background: rgba(255,255,255,0.05); }
+
+        .pad-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; max-width: 450px; margin: 0 auto; }
+        .pad-node {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color);
+            color: var(--text-main); padding: 14px 0; font-size: 1.1rem; font-weight: 600;
+            border-radius: 4px; cursor: pointer;
+        }
+        .pad-node:hover { background: var(--text-main); color: var(--bg-dark); }
+
+        .result-title { font-size: 2rem; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
+        .text-win { color: var(--winning-green); }
+        .text-lose { color: var(--bowling-theme); }
+        .text-tie { color: var(--accent-gold); }
+
+        .badge { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
+        .badge-batting { color: #5b84fa; }
+        .badge-bowling { color: #fa5b5b; }
+    </style>
+</head>
+<body>
+
+<div class="stadium-container">
+    <div class="broadcast-header">
+        <h1>International Arena</h1>
+        <div id="role-identity">Identifying Connection...</div>
+    </div>
+
+    <div class="match-arena">
+        <div id="live-announcement" class="status-ticker">Syncing with Pitch...</div>
+
+        <div class="live-scoreboard">
+            <div class="score-box">
+                <div class="label">Stance</div>
+                <div id="current-role" class="value">-</div>
+            </div>
+            <div class="score-box">
+                <div class="label">Runs</div>
+                <div id="score-display" class="value">0</div>
+            </div>
+            <div class="score-box">
+                <div class="label">Target / Innings</div>
+                <div id="target-display" class="value">-</div>
+            </div>
+        </div>
+
+        <div class="showdown-stage">
+            <div class="versus-grid">
+                <div class="choice-disc">
+                    <span class="role-lbl">Batter</span>
+                    <span class="num-val" id="reveal-bat">-</span>
+                </div>
+                <div style="color: var(--border-color)">vs</div>
+                <div class="choice-disc">
+                    <span class="role-lbl">Bowler</span>
+                    <span class="num-val" id="reveal-bowl">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="toss-choice-panel" class="panel">
+            <p style="color: var(--text-muted); margin-bottom: 12px;">You are Player 1. Call the Toss structure:</p>
+            <button class="action-btn" onclick="sendTossChoice('odd')">Odd</button>
+            <button class="action-btn" onclick="sendTossChoice('even')">Even</button>
+        </div>
+
+        <div id="decision-panel" class="panel">
+            <p style="color: var(--accent-gold); margin-bottom: 12px;">Toss Won! Select Match Layout Strategy:</p>
+            <button class="action-btn" onclick="sendDecision('bat')">Bat First</button>
+            <button class="action-btn" onclick="sendDecision('bowl')">Bowl First</button>
+        </div>
+
+        <div id="gameplay-panel" class="panel">
+            <p id="input-prompt" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 15px;">Select value:</p>
+            <div class="pad-grid">
+                <button class="pad-node" onclick="selectRun(1)">1</button>
+                <button class="pad-node" onclick="selectRun(2)">2</button>
+                <button class="pad-node" onclick="selectRun(3)">3</button>
+                <button class="pad-node" onclick="selectRun(4)">4</button>
+                <button class="pad-node" onclick="selectRun(5)">5</button>
+                <button class="pad-node" onclick="selectRun(6)">6</button>
+                <button class="pad-node" onclick="selectRun(7)">7</button>
+                <button class="pad-node" onclick="selectRun(8)">8</button>
+                <button class="pad-node" onclick="selectRun(9)">9</button>
+                <button class="pad-node" onclick="selectRun(10)">10</button>
+            </div>
+        </div>
+
+        <div id="post-match-panel" class="panel">
+            <div id="match-outcome-banner" class="result-title">-</div>
+            <p id="match-summary-text" style="color: var(--text-muted); margin-bottom: 20px;">The match has concluded.</p>
+            <button class="action-btn" style="border-color: var(--accent-gold);" onclick="triggerRestart()">Return to Beginning</button>
+            <div id="timer-countdown" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 15px;">Auto reset pending...</div>
+        </div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+    let myRoleString = ""; // Rigorous tracking matching exactly "Player 1" or "Player 2"
+    let countdownTimer = null;
+
+    socket.on('connect', () => {
+        socket.emit('request-sync');
+    });
+
+    socket.on('player-assignment', (role) => {
+        myRoleString = role;
+        document.getElementById('role-identity').innerText = `Stadium Identity: ${role}`;
+    });
+
+    // MASTER RE-RENDER SYSTEM
+    socket.on('sync-lobby', (state) => {
+        // 1. Structural Display Synchronization
+        document.getElementById('live-announcement').innerText = state.lastActionText;
+        document.getElementById('reveal-bat').innerText = state.lastBatNum;
+        document.getElementById('reveal-bowl').innerText = state.lastBowlNum;
+        document.getElementById('score-display').innerText = state.score;
+
+        if (state.lastActionText.includes("OUT") || state.status === 'gameover') {
+            document.getElementById('reveal-bat').style.color = 'var(--bowling-theme)';
+            document.getElementById('reveal-bowl').style.color = 'var(--bowling-theme)';
+        } else {
+            document.getElementById('reveal-bat').style.color = 'var(--text-main)';
+            document.getElementById('reveal-bowl').style.color = 'var(--text-main)';
+        }
+
+        // 2. Identify Stance matching explicit Server Roles
+        let stanceLayout = "-";
+        if (state.status === 'playing' || state.status === 'gameover') {
+            const currentTurnRole = (myRoleString === state.battingPlayer) ? "Batting" : "Bowling";
+            const currentBadgeClass = currentTurnRole === "Batting" ? "badge-batting" : "badge-bowling";
+            stanceLayout = `<span class="badge ${currentBadgeClass}">${currentTurnRole}</span>`;
+        }
+        document.getElementById('current-role').innerHTML = stanceLayout;
+
+        // 3. Sync Target Values
+        const targetVal = state.target ? state.target : '-';
+        document.getElementById('target-display').innerText = `${targetVal} (Innings ${state.innings})`;
+
+        // 4. Structural Clean Slate & Conditional Panel Mounting
+        hideAllPanels();
+        clearInterval(countdownTimer);
+
+        if (state.status === 'toss') {
+            if (myRoleString === 'Player 1') {
+                document.getElementById('toss-choice-panel').style.display = 'block';
+            }
+        }
+        else if (state.status === 'toss-throw') {
+            document.getElementById('gameplay-panel').style.display = 'block';
+            document.getElementById('input-prompt').innerText = "Submit value for initial Toss Hand Count (1-10):";
+        }
+        else if (state.status === 'decision') {
+            const p1Won = state.lastActionText.includes("Player 1 Wins");
+            const structuralWinner = p1Won ? 'Player 1' : 'Player 2';
+            
+            if (myRoleString === structuralWinner) {
+                document.getElementById('decision-panel').style.display = 'block';
+            }
+        }
+        else if (state.status === 'playing') {
+            document.getElementById('gameplay-panel').style.display = 'block';
+            document.getElementById('input-prompt').innerText = "Select delivery value to execute:";
+        }
+        else if (state.status === 'gameover') {
+            document.getElementById('post-match-panel').style.display = 'block';
+            const banner = document.getElementById('match-outcome-banner');
+            const summary = document.getElementById('match-summary-text');
+
+            if (state.winnerRole === 'tie') {
+                banner.innerText = "Match Tied";
+                banner.className = "result-title text-tie";
+                summary.innerText = "Scores finished perfectly level across both innings sequences.";
+            } else if (myRoleString === state.winnerRole) {
+                banner.innerText = "🏆 Victory";
+                banner.className = "result-title text-win";
+                summary.innerText = state.outcomeReason === 'chased'
+                    ? "Incredible match! You successfully chased down the targeted score."
+                    : "Outstanding defensive strategy! You bowled out the opposition before they hit the target.";
+            } else {
+                banner.innerText = "Defeat";
+                banner.className = "result-title text-lose";
+                summary.innerText = state.outcomeReason === 'chased'
+                    ? "The opposition successfully tracked down and chased your targeted runs."
+                    : "Your chase was cut short due to a critical delivery match.";
+            }
+
+            startAutomaticCountdown(30);
+        }
+    });
+
+    socket.on('error-msg', (msg) => { alert(msg); });
+
+    function hideAllPanels() {
+        document.getElementById('toss-choice-panel').style.display = 'none';
+        document.getElementById('decision-panel').style.display = 'none';
+        document.getElementById('gameplay-panel').style.display = 'none';
+        document.getElementById('post-match-panel').style.display = 'none';
+    }
+
+    function sendTossChoice(choice) { socket.emit('toss-choice', choice); }
+    function sendDecision(decision) { socket.emit('toss-decision', decision); }
+    
+    function selectRun(num) { 
+        socket.emit('submit-number', num); 
+        document.getElementById('live-announcement').innerText = "Your number is logged. Waiting for your opponent...";
+    }
+    
+    function triggerRestart() { socket.emit('force-restart'); }
+
+    function startAutomaticCountdown(seconds) {
+        let current = seconds;
+        const targetNode = document.getElementById('timer-countdown');
+        targetNode.innerText = `Returning to locker room automatically in ${current}s...`;
+        
+        countdownTimer = setInterval(() => {
+            current--;
+            if (current <= 0) {
+                clearInterval(countdownTimer);
+                socket.emit('force-restart');
+            } else {
+                targetNode.innerText = `Returning to locker room automatically in ${current}s...`;
+            }
+        }, 1000);
+    }
+</script>
+</body>
+</html>
