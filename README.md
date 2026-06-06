@@ -1,11 +1,12 @@
 # Handcricketonline
-# 🏏 Grand Stand Multi-Player Hand Cricket Arena
+https://handcricketonline.onrender.com/
+#  Multi-Player Hand Cricket Arena
 
 A real-time, 2-player multiplayer Hand Cricket game built using **Node.js, Express, and Socket.IO**. This repository transforms the traditional childhood game into a robust, web-based digital arena featuring a **Deterministic Unified State Machine** to prevent desynchronization, layout collapse, or stale player identity drops during matches.
 
 ---
 
-## 🚀 Features
+## Features
 
 - **True 2-Player Match Sync:** Both screens update simultaneously using an atomic server-to-client broadcast architecture (`sync-lobby`).
 - **Dynamic Connection & Role Guard:** Rigid slots map clients directly to `Player 1` and `Player 2` indexes, making the room resilient against unexpected browser page refreshes or connection switches.
